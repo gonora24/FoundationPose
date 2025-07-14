@@ -335,14 +335,14 @@ if wp is not None:
         if v<0 or v>=H:
           continue
         cur_depth = depth[v,u]
-        if cur_depth>=0.001 and cur_depth<zfar and abs(cur_depth-mean_depth)<0.01:
+        if cur_depth>=0.001 and cur_depth<zfar and abs(cur_depth-mean_depth)<0.01: # changed from 0.01 to 1.0
           weight = wp.exp( -float((u-w)*(u-w) + (h-v)*(h-v)) / (2.0*sigmaD*sigmaD) - (depthCenter-cur_depth)*(depthCenter-cur_depth)/(2.0*sigmaR*sigmaR) )
           sum_weight += weight
           sum += weight*cur_depth
     if sum_weight>0 and num_valid>0:
       out[h,w] = sum/sum_weight
 
-  def bilateral_filter_depth(depth, radius=2, zfar=100, sigmaD=2, sigmaR=100000, device='cuda'):
+  def bilateral_filter_depth(depth, radius=2, zfar=100, sigmaD=2, sigmaR=100000, device='cuda'): # sigmaR=10.0, zfar=900
     if isinstance(depth, np.ndarray):
       depth_wp = wp.array(depth, dtype=float, device=device)
     else:
@@ -384,7 +384,7 @@ if wp is not None:
       out[h,w] = d_ori
 
 
-  def erode_depth(depth, radius=2, depth_diff_thres=0.001, ratio_thres=0.8, zfar=100, device='cuda'):
+  def erode_depth(depth, radius=2, depth_diff_thres=0.001, ratio_thres=0.8, zfar=100, device='cuda'): # depth_diff=5.0, zfar=1200
     depth_wp = wp.from_torch(torch.as_tensor(depth, dtype=torch.float, device=device))
     out_wp = wp.zeros(depth.shape, dtype=float, device=device)
     wp.launch(kernel=erode_depth_kernel, device=device, dim=[depth.shape[0], depth.shape[1]], inputs=[depth_wp, out_wp, radius, depth_diff_thres, ratio_thres, zfar],)

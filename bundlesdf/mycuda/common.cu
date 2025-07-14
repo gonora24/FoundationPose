@@ -201,20 +201,68 @@ __device__ Eigen::Vector3f calculateBarycentricCoordinate3DKernel(const Eigen::M
 }
 
 
+// __device__ void calculateBarycentricCoordinate2DKernel(const Eigen::Matrix<float,3,2> &triangle, const Eigen::Vector2f &p, Eigen::Vector3f &w)
+// {
+//   Eigen::Vector2f CA = triangle.row(0)-triangle.row(2);
+//   Eigen::Vector2f AC = -CA;
+//   Eigen::Vector2f CP = p-triangle.row(2).transpose();
+//   Eigen::Vector2f AB = triangle.row(1)-triangle.row(0);
+//   Eigen::Vector2f AP = p-triangle.row(0).transpose();
+//   Eigen::Matrix2f numerator, denominator;
+//   numerator << CA, CP;
+//   denominator<<AB, AC;
+//   w(1) = numerator.determinant()/denominator.determinant();
+//   numerator << AB, AP;
+//   w(2) = numerator.determinant()/denominator.determinant();
+//   w(0) = 1-w(1)-w(2);
+// }
+
 __device__ void calculateBarycentricCoordinate2DKernel(const Eigen::Matrix<float,3,2> &triangle, const Eigen::Vector2f &p, Eigen::Vector3f &w)
 {
+  // These operations are fine on device as they are direct vector/matrix operations
+  // and do not involve host-only Eigen features like dynamic memory allocation or complex algorithms.
   Eigen::Vector2f CA = triangle.row(0)-triangle.row(2);
   Eigen::Vector2f AC = -CA;
-  Eigen::Vector2f CP = p-triangle.row(2).transpose();
+  Eigen::Vector2f CP = p-triangle.row(2).transpose(); // .transpose() on a Vector2f is a no-op for storage, but fine.
   Eigen::Vector2f AB = triangle.row(1)-triangle.row(0);
-  Eigen::Vector2f AP = p-triangle.row(0).transpose();
-  Eigen::Matrix2f numerator, denominator;
-  numerator << CA, CP;
-  denominator<<AB, AC;
-  w(1) = numerator.determinant()/denominator.determinant();
-  numerator << AB, AP;
-  w(2) = numerator.determinant()/denominator.determinant();
-  w(0) = 1-w(1)-w(2);
+  Eigen::Vector2f AP = p-triangle.row(0).transpose(); // .transpose() on a Vector2f is a no-op for storage, but fine.
+
+  // Eigen::Matrix2f numerator, denominator;
+  // numerator << CA, CP; // This is using CommaInitializer, which might also be problematic as a warning suggested.
+  // denominator<<AB, AC; // Same here.
+
+  // Let's directly calculate the components for the determinant
+  // For numerator << CA, CP;, it means:
+  // numerator_mat = [CA.x, CP.x]
+  //                 [CA.y, CP.y]
+  // Determinant is CA.x * CP.y - CP.x * CA.y
+
+  // For denominator<<AB, AC;, it means:
+  // denominator_mat = [AB.x, AC.x]
+  //                   [AB.y, AC.y]
+  // Determinant is AB.x * AC.y - AC.x * AB.y
+
+  float det_numerator1 = CA.x() * CP.y() - CP.x() * CA.y();
+  float det_denominator  = AB.x() * AC.y() - AC.x() * AB.y();
+
+  // Handle potential division by zero if the triangle is degenerate
+  if (fabsf(det_denominator) < 1e-9f) { // Use a small epsilon for float comparison
+      w = Eigen::Vector3f::Zero(); // Or handle as an error, or assign a default value
+      return;
+  }
+
+  w(1) = det_numerator1 / det_denominator;
+
+  // Re-calculate numerator for w(2)
+  // For numerator << AB, AP;, it means:
+  // numerator_mat = [AB.x, AP.x]
+  //                 [AB.y, AP.y]
+  // Determinant is AB.x * AP.y - AP.x * AB.y
+  float det_numerator2 = AB.x() * AP.y() - AP.x() * AB.y();
+
+  w(2) = det_numerator2 / det_denominator;
+
+  w(0) = 1.0f - w(1) - w(2);
 }
 
 

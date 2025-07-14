@@ -438,7 +438,8 @@ class YcbVideoReader(BopBaseReader):
 
     self.make_id_strs()
 
-    self.ob_ids = np.arange(1,22).astype(int).tolist()
+    # self.ob_ids = np.arange(1,22).astype(int).tolist()
+    self.ob_ids = [4, 5, 9, 10, 11, 14, 16] # bc some are let out due to memory issues
     YCB_VIDEO_DIR = os.getenv('YCB_VIDEO_DIR')
     names = sorted(os.listdir(f'{YCB_VIDEO_DIR}/models/'))
     self.ob_id_to_names = {}
@@ -482,7 +483,8 @@ class YcbVideoReader(BopBaseReader):
     if 'BOP' in self.base_dir:
       mesh_file = os.path.abspath(f'{self.base_dir}/../../ycbv_models/models/obj_{ob_id:06d}.ply')
     else:
-      mesh_file = f'{self.base_dir}/../../ycbv_models/models/obj_{ob_id:06d}.ply'
+      # mesh_file = f'{self.base_dir}/../../ycbv_models/models/obj_{ob_id:06d}.ply'
+      mesh_file = f'{self.base_dir}/../../models/obj_{ob_id:06d}.ply'
     return mesh_file
 
 

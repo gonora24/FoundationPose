@@ -1183,7 +1183,7 @@ class NerfRunner:
 
     logging.info(f"Texture: Texture map computation")
     for i in range(len(rgbs_raw)):
-      print(f'project train_images {i}/{len(rgbs_raw)}')
+      print(f'project train_images {i+1}/{len(rgbs_raw)}')
 
       cvcam_in_ob = tf[i]@np.linalg.inv(glcam_in_cvcam)
       _, render_depth = renderer.render(mesh=mesh, ob_in_cvcam=np.linalg.inv(cvcam_in_ob))

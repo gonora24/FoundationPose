@@ -134,9 +134,9 @@ def run_pose_estimation():
 if __name__=='__main__':
   parser = argparse.ArgumentParser()
   code_dir = os.path.dirname(os.path.realpath(__file__))
-  parser.add_argument('--ycbv_dir', type=str, default="/mnt/9a72c439-d0a7-45e8-8d20-d7a235d02763/DATASET/YCB_Video", help="data dir")
+  parser.add_argument('--ycbv_dir', type=str, default="./demo_data/ycbv", help="data dir")
   parser.add_argument('--use_reconstructed_mesh', type=int, default=0)
-  parser.add_argument('--ref_view_dir', type=str, default="/mnt/9a72c439-d0a7-45e8-8d20-d7a235d02763/DATASET/YCB_Video/bowen_addon/ref_views_16")
+  parser.add_argument('--ref_view_dir', type=str, default="./demo_data/ycbv/ref_views_16")
   parser.add_argument('--debug', type=int, default=0)
   parser.add_argument('--debug_dir', type=str, default=f'{code_dir}/debug')
   opt = parser.parse_args()
