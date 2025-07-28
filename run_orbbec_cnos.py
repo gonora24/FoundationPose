@@ -13,11 +13,6 @@ from estimater import *
 from datareader import *
 import argparse
 
-import torch
-from ultralytics import YOLO, YOLOWorld
-# from ..sam.sam_image_predictor import SAM2ImagePredictor
-from segment_anything import SamPredictor, sam_model_registry, SamAutomaticMaskGenerator
-
 
 if __name__=='__main__':
   parser = argparse.ArgumentParser()
@@ -88,75 +83,19 @@ if __name__=='__main__':
     depth = depth / 1000.0 # convert to meters
 
     if i==0:
-      # YOLO detection
-      # yolo_model = YOLO(YOLOV8_MODEL_PATH)
-      yolo_world = YOLOWorld()
-      # Ensure the model is on the correct device
-      # yolo_model.to("cuda")
-      yolo_world.to("cuda")
-      logging.info("YOLO World model loaded successfully.")
-      # logging.info(f"Performing YOLO detection for '{TARGET_CLASS_NAME}' (ID: {TARGET_CLASS_ID})")
-      # results = yolo_model(color, verbose=False) # Run inference, suppress verbose output
-      yolo_world.set_classes(['white plastic' 'white block', 'white plastic T'])
-      results = yolo_world.predict(color, conf=0.01) # 0.25 default
-      results[0].show()
-      max_conf = -1.0
-      best_detection = None
-      for detection in results[0].boxes:
-        conf = detection.conf.item()
+      # CNOS Mask detection
+      detection = np.load(f"{args.test_scene_dir}/cnos_output/cnos_results/detection.npz")
+      mask = detection["segmentation"][0] # shape from (1, 360, 640) to (360, 640)
 
-        if conf > max_conf:
-            max_conf = conf
-            best_detection = detection
+      assert mask is not None
+      logging.info("Mask loaded successfully.")
 
-      detected_box = None
-      detected_label = None
-
-      # Iterate through detections to find the target object
-      # for r in results:
-      #     boxes = r.boxes # Bounding boxes
-      #     names = r.names # Class names mapping
-      #     for i, box in enumerate(boxes):
-      #         class_id = int(box.cls[0])
-      #         if class_id == TARGET_CLASS_ID:
-      #             detected_box = box.xyxy[0].cpu().numpy() # Get xyxy coordinates
-      #             detected_label = names[class_id]
-      #             print(f"Detected '{detected_label}' with bounding box: {detected_box}")
-      #             break # Take the first detection of the target class
-      #     if detected_box is not None:
-      #         break
-      if best_detection is not None:
-        detected_box = best_detection.xyxy[0].cpu().numpy()
-      assert detected_box is not None
-
-      # checkpoint = "./checkpoints/sam2.1_hiera_large.pt"
-      # model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
-      # predictor = SAM2ImagePredictor.from_pretrained("facebook/sam2-hiera-large")
-      logging.info("Start Segmentation")
-      sam = sam_model_registry["vit_h"](checkpoint="../sam_checkpoints/sam_vit_h_4b8939.pth")
-      predictor = SamPredictor(sam)
-      predictor.set_image(color)
-      # input_box = detected_box.reshape(1, -1)
-      masks, scores, logits = predictor.predict(
-          point_coords=None,
-          point_labels=None,
-          box=detected_box,
-          multimask_output=False, # Set to False to get a single, best mask
-      )
-
-      if masks.shape[0] > 0:
-        # Take the first mask (since multimask_output=False, there should be only one)
-        predicted_mask = masks[0]
-        logging.info("Mask generated successfully.")
-      else:
-        logging.info("SAM did not generate a mask for the given bounding box.")
-        predicted_mask = None
       # plt.imshow(predicted_mask, cmap='gray')
       # plt.title("Mask")
       # plt.axis('off')
       # plt.show()
 
-      pose = est.register(K=K, rgb=cv2.cvtColor(color,cv2.COLOR_RGB2BGR), depth=depth, ob_mask=predicted_mask, iteration=args.est_refine_iter)
+      pose = est.register(K=K, rgb=cv2.cvtColor(color,cv2.COLOR_RGB2BGR), depth=depth, ob_mask=mask, iteration=args.est_refine_iter)
       
       if debug>=3:
         m = mesh.copy()

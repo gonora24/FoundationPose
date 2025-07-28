@@ -4,10 +4,10 @@ import numpy as np
 # Load a PLY file (assuming it's a point cloud)
 # If your PLY contains a mesh (vertices and faces), Open3D can also load it as a TriangleMesh
 POINT_CLOUD_FILE = "demo_data/tomato_soup_can/mesh/obj_000009.ply"
-MESH_FILE = "demo_data/tomato_soup_can/mesh/converted_obj_000009.obj"
+MESH_FILE = "demo_data/T/mesh/XL-T.obj"
 FRAME_SIZE = 50
 
-MESH = False
+MESH = True
 
 if not MESH:
     pcd = o3d.io.read_point_cloud(POINT_CLOUD_FILE)
