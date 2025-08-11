@@ -82,6 +82,10 @@ if __name__=='__main__':
     depth = data['d'].astype(np.int16)
     depth = depth / 1000.0 # convert to meters
 
+    # test with different resolution
+    color_resized = Image.fromarray(color).resize((320, 180), resample=Image.BILINEAR)
+    color_resized = np.array(color_resized)
+
     if i==0:
       # CNOS Mask detection
       detection = np.load(f"{args.test_scene_dir}/cnos_output/cnos_results/detection.npz")

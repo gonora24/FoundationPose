@@ -1,8 +1,8 @@
 OBJECT="T"
-OUTPUT_DIR="/home/pano/hiwi/nora/FoundationPose/demo_data/$OBJECT/cnos_output"
-RGB_PATH="/home/pano/hiwi/nora/FoundationPose/demo_data/$OBJECT/tmp/color.png"
+OUTPUT_DIR="/home/pano/hiwi/nora/FoundationPose/demo_data/$OBJECT/new_render"
+RGB_PATH=/home/pano/Datasets/pushT/2025_07_21-10_50_21/images/ORB_0_orig/0.png
 
-rm -r /home/pano/hiwi/nora/FoundationPose/demo_data/$OBJECT/cnos_output/cnos_results
+rm -r /home/pano/hiwi/nora/FoundationPose/demo_data/$OBJECT/new_render/cnos_results
 
 python -m utils.save_image --rgb_path $RGB_PATH
 

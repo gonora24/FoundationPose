@@ -2,6 +2,8 @@ from hardware.hardware_orbbec import ORBBEC
 import time
 import cv2
 import argparse
+from PIL import Image
+import numpy as np
 
 def save_camera_image(rgb_path):
 
@@ -23,6 +25,8 @@ def save_camera_image(rgb_path):
 
     data = device.get_sensors()
     color = data['rgb']
+    color_resized = Image.fromarray(color).resize((320, 180), resample=Image.BILINEAR)
+    color_resized = np.array(color_resized) 
     cv2.imwrite(rgb_path, color)
 
 
